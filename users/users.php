@@ -7,36 +7,65 @@ $dbname = 'your_database_name';
 $username = 'your_username'; 
 $password = 'your_password';
 
-try {
-    // Connecting  to database
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Prep my SQL query
-    $sql = "SELECT
-                u.username AS User_Name,
-                u.registration_time AS Registration_Time,
-                COUNT(o.id) AS Number_of_Orders,
-                MAX(o.order_date) AS Last_Order_Date,
-                CASE
-                    WHEN COUNT(o.id) >= 5 THEN 'active'
-                    ELSE 'inactive'
-                END AS Status
-            FROM
-                users u
-            LEFT JOIN
-                orders o ON u.id = o.user_id
-            GROUP BY
-                u.id
-            ORDER BY
-                Number_of_Orders DESC";
+class Database {
+    private $host;
+    private $dbname;
+    private $username;
+    private $password;
+    private $pdo;
 
-    // Execute query
-    $stmt = $pdo->query($sql);
-    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    public function __construct($host, $dbname, $username, $password) {
+        $this->host = $host;
+        $this->dbname = $dbname;
+        $this->username = $username;
+        $this->password = $password;
+    }
 
-} catch (PDOException $e) {
-    die("Error executing query: " . $e->getMessage());
+    public function connect() {
+        try {
+            $this->pdo = new PDO("mysql:host={$this->host};dbname={$this->dbname}", $this->username, $this->password);
+            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        } catch (PDOException $e) {
+            die("Database connection failed: " . $e->getMessage());
+        }
+    }
+
+    public function executeQuery($sql) {
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            die("Error executing query: " . $e->getMessage());
+        }
+    }
+}
+
+class UserData {
+    private $db;
+
+    public function __construct($db) {
+        $this->db = $db;
+    }
+
+    public function getUsersWithOrderStatistics() {
+        $sql = "SELECT 
+                    u.username,
+                    u.registration_time,
+                    COUNT(o.user_id) AS num_orders,
+                    MAX(o.order_date) AS last_order_date
+                FROM 
+                    users u
+                LEFT JOIN 
+                    orders o ON u.id = o.user_id
+                GROUP BY 
+                    u.id
+                ORDER BY 
+                    num_orders DESC";
+
+        return $this->db->executeQuery($sql);
+    }
 }
 
 ?>
