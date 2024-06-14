@@ -12,3 +12,7 @@ $q = $_GET['q'];
 $filteredUsers = array_filter($users, function($user) use ($q) {
     return stripos($user, $q) !== false;
   });
+
+  foreach ($filteredUsers as $user) {
+    echo "<a href='#' onclick='fillUser(\"$user\"); return false;'>$user</a><br>";
+  }
