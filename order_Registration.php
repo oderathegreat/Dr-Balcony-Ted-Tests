@@ -37,7 +37,7 @@
           document.getElementById('userSuggestions').innerHTML = this.responseText;
         }
       };
-      xmlhttp.open("GET", "get_users.php?q=" + input, true);
+      xmlhttp.open("GET", "getUsers.php?q=" + input, true);
       xmlhttp.send();
     }
   </script>
