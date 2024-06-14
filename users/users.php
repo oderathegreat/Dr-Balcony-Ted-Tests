@@ -68,6 +68,13 @@ class UserData {
     }
 }
 
+//Instantiate db connection
+$db = new Database($host, $dbname, $username, $password);
+$db->connect();
+
+$userData = new UserData($db);
+$users = $userData->getUsersWithOrderStatistics();
+
 ?>
 
 
